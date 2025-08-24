@@ -152,10 +152,14 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
   }, [searchTerm, products]);
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex h-full bg-gray-200">
       {/* Product Search & Selection */}
       <div className="flex-1 p-6">
-        <div className="bg-white rounded-lg shadow-md p-6 h-full">
+        <div className="bg-white border border-gray-400 p-4 h-full">
+          <div className="bg-gradient-to-b from-blue-100 to-blue-200 border border-gray-400 p-2 mb-4">
+            <h3 className="font-bold text-sm text-gray-800">Billed Form</h3>
+          </div>
+          
           <div className="mb-6">
             <div className="relative">
               <Search className="absolute left-3 top-3 text-gray-400" size={20} />
@@ -164,34 +168,74 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                 placeholder="Search products or scan barcode..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                className="w-full pl-10 pr-4 py-2 border border-gray-400 focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+          {/* Bill Details Table */}
+          <div className="mb-4">
+            <table className="w-full border border-gray-400 text-sm">
+              <thead className="bg-yellow-200">
+                <tr>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">SNo</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Bill Date</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Billing</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Bill Amt</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Change Amt</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Customer</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Phone</th>
+                  <th className="border border-gray-400 px-2 py-1 text-left font-bold">Area</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.length > 0 ? (
+                  cart.map((item, index) => (
+                    <tr key={item.product.id} className="hover:bg-gray-50">
+                      <td className="border border-gray-400 px-2 py-1">{index + 1}</td>
+                      <td className="border border-gray-400 px-2 py-1">{new Date().toLocaleDateString()}</td>
+                      <td className="border border-gray-400 px-2 py-1">{item.product.name}</td>
+                      <td className="border border-gray-400 px-2 py-1">₹{(item.product.price * item.quantity).toFixed(2)}</td>
+                      <td className="border border-gray-400 px-2 py-1">₹0.00</td>
+                      <td className="border border-gray-400 px-2 py-1">{selectedCustomer?.name || 'Walk-in'}</td>
+                      <td className="border border-gray-400 px-2 py-1">{selectedCustomer?.phone || ''}</td>
+                      <td className="border border-gray-400 px-2 py-1">AREA</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="border border-gray-400 px-2 py-4 text-center text-gray-500">
+                      No items in cart
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
             {filteredProducts.map(product => (
               <div
                 key={product.id}
-                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                className={`border border-gray-400 p-2 cursor-pointer transition-colors text-xs ${
                   product.stock <= 0
-                    ? 'bg-gray-100 border-gray-300'
+                    ? 'bg-gray-100'
                     : product.stock <= product.minStock
-                    ? 'bg-yellow-50 border-yellow-300 hover:bg-yellow-100'
-                    : 'bg-white border-gray-200 hover:bg-blue-50'
+                    ? 'bg-yellow-50 hover:bg-yellow-100'
+                    : 'bg-white hover:bg-blue-50'
                 }`}
                 onClick={() => addToCart(product)}
               >
-                <h3 className="font-medium text-gray-900 mb-1">{product.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">₹{product.price}</p>
-                <div className="flex justify-between items-center text-sm">
+                <h3 className="font-medium text-gray-900 mb-1 text-xs">{product.name}</h3>
+                <p className="text-xs text-gray-600 mb-1">₹{product.price}</p>
+                <div className="flex justify-between items-center text-xs">
                   <span className={`${product.stock <= product.minStock ? 'text-orange-600' : 'text-gray-600'}`}>
                     Stock: {product.stock}
                   </span>
                   <span className="text-gray-500">GST: {product.gst}%</span>
                 </div>
                 {product.stock <= 0 && (
-                  <div className="mt-2 text-red-600 text-sm font-medium">Out of Stock</div>
+                  <div className="mt-1 text-red-600 text-xs font-medium">Out of Stock</div>
                 )}
               </div>
             ))}
@@ -200,16 +244,20 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
       </div>
 
       {/* Cart & Checkout */}
-      <div className="w-96 p-6">
-        <div className="bg-white rounded-lg shadow-md p-6 h-full flex flex-col">
+      <div className="w-80 p-4">
+        <div className="bg-white border border-gray-400 p-4 h-full flex flex-col">
+          <div className="bg-gradient-to-b from-blue-100 to-blue-200 border border-gray-400 p-2 mb-4">
+            <h3 className="font-bold text-sm text-gray-800">Cart Details</h3>
+          </div>
+          
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold flex items-center">
+            <h2 className="text-lg font-bold flex items-center">
               <ShoppingCart className="mr-2" size={24} />
               Cart ({cart.length})
             </h2>
             <button
               onClick={() => setShowCustomerModal(true)}
-              className="flex items-center text-blue-600 hover:text-blue-800"
+              className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
             >
               <User size={16} className="mr-1" />
               {selectedCustomer ? selectedCustomer.name : 'Add Customer'}
@@ -224,9 +272,9 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
             ) : (
               <div className="space-y-3">
                 {cart.map(item => (
-                  <div key={item.product.id} className="border rounded-lg p-3">
+                  <div key={item.product.id} className="border border-gray-300 p-2">
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm">{item.product.name}</h4>
+                      <h4 className="font-medium text-xs">{item.product.name}</h4>
                       <button
                         onClick={() => removeFromCart(item.product.id)}
                         className="text-red-500 hover:text-red-700"
@@ -239,19 +287,19 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                          className="w-5 h-5 bg-gray-200 flex items-center justify-center hover:bg-gray-300 text-xs"
                         >
                           <Minus size={12} />
                         </button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-6 text-center text-xs">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                          className="w-5 h-5 bg-gray-200 flex items-center justify-center hover:bg-gray-300 text-xs"
                         >
                           <Plus size={12} />
                         </button>
                       </div>
-                      <span className="font-medium">₹{item.product.price * item.quantity}</span>
+                      <span className="font-medium text-xs">₹{item.product.price * item.quantity}</span>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -262,7 +310,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                         max="100"
                         value={item.discount}
                         onChange={(e) => updateDiscount(item.product.id, Number(e.target.value))}
-                        className="w-16 px-1 py-1 text-xs border rounded"
+                        className="w-12 px-1 py-1 text-xs border border-gray-400"
                       />
                     </div>
                   </div>
@@ -273,7 +321,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
 
           {cart.length > 0 && (
             <>
-              <div className="border-t pt-4 mb-4">
+              <div className="border-t border-gray-300 pt-3 mb-3">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
@@ -283,14 +331,14 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                     <span>GST:</span>
                     <span>₹{gstAmount.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <div className="flex justify-between font-bold border-t border-gray-300 pt-2">
                     <span>Total:</span>
                     <span>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-3">
                 <label className="block text-sm font-medium mb-2">Payment Method:</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -301,13 +349,13 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                     <button
                       key={value}
                       onClick={() => setPaymentMethod(value as any)}
-                      className={`flex flex-col items-center p-2 rounded-lg border ${
+                      className={`flex flex-col items-center p-2 border ${
                         paymentMethod === value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-300 hover:bg-gray-50'
+                          ? 'border-blue-500 bg-blue-100 text-blue-700'
+                          : 'border-gray-400 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon size={20} className="mb-1" />
+                      <Icon size={16} className="mb-1" />
                       <span className="text-xs">{label}</span>
                     </button>
                   ))}
@@ -316,7 +364,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
 
               <button
                 onClick={processPayment}
-                className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                className="w-full bg-green-600 text-white py-2 font-medium hover:bg-green-700 transition-colors"
               >
                 Process Payment
               </button>
@@ -328,7 +376,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
       {/* Customer Selection Modal */}
       {showCustomerModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-h-96 overflow-y-auto">
+          <div className="bg-white border border-gray-400 p-4 w-80 max-h-80 overflow-y-auto">
             <h3 className="text-lg font-bold mb-4">Select Customer</h3>
             <div className="space-y-2">
               <button
@@ -336,7 +384,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                   setSelectedCustomer(null);
                   setShowCustomerModal(false);
                 }}
-                className="w-full text-left p-2 rounded hover:bg-gray-100"
+                className="w-full text-left p-2 hover:bg-gray-100"
               >
                 Walk-in Customer
               </button>
@@ -347,7 +395,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
                     setSelectedCustomer(customer);
                     setShowCustomerModal(false);
                   }}
-                  className="w-full text-left p-2 rounded hover:bg-gray-100"
+                  className="w-full text-left p-2 hover:bg-gray-100"
                 >
                   <div className="font-medium">{customer.name}</div>
                   <div className="text-sm text-gray-600">{customer.phone}</div>
@@ -357,7 +405,7 @@ export default function POS({ products, customers, onUpdateProduct, onAddTransac
             </div>
             <button
               onClick={() => setShowCustomerModal(false)}
-              className="mt-4 w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300"
+              className="mt-4 w-full bg-gray-200 text-gray-800 py-2 hover:bg-gray-300"
             >
               Cancel
             </button>
